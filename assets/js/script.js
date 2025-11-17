@@ -1,209 +1,156 @@
-let log = new Log(document.querySelector(".log"));
-
-let char = new Sorcerer("Merlin");
-
-const monsters = [LittleMonster, BigMonster, Skeleton, Orc, Slime, Dragon];
-
-
-alert('A aventura aguarda por você, bravo herói! Prepare-se para enfrentar monstros formidáveis e conquistar glórias inesquecíveis!');
-
-function powerOf(MonsterClass){
-    try{
-        const inst = new MonsterClass();
-        return inst.attack + inst.defense + (inst.life / 10);
-    }catch(e){ return 0; }
-}
-
-const sortedMonsters = monsters.slice().sort((a,b)=> powerOf(a) - powerOf(b));
-let progressiveIndex = 0;
-
-function createMonster(){
-    const MonsterClass = sortedMonsters[progressiveIndex];
-    progressiveIndex = (progressiveIndex + 1) % sortedMonsters.length;
-    return new MonsterClass();
-}
-
-let monster = createMonster();
-log.addMessage(`${monster.name} apareceu! Prepare-se para a luta.`);
-
-const stage = new Stage(
-    char,
-    monster,
-    document.querySelector("#char"),
-    document.querySelector("#monster"),
-    log,
-    createMonster,
-    (killedName) => {
-        incrementKillCount();
-        stage.update();
-        refreshUI();
-        log.addMessage(`${killedName} foi abatido pelo herói.`);
-        return showRewardPanel(killedName);
-    },
-    (attackedObj, damage) => {
-        showDamagePop(attackedObj, damage);
+class Stage {
+    constructor(fighter1, fighter2, fighter1El, fighter2El, log) {
+        this.fighter1 = fighter1;
+        this.fighter2 = fighter2;
+        this.fighter1El = fighter1El;
+        this.fighter2El = fighter2El;
+        this.log = log;
+        this.lastDefeated = null;
     }
-);
 
+    start() {
+        this.update();
+        this.fighter1El.querySelector('.attackButton').addEventListener('click', () => {
+            this.playerTurn();
+        });
+    }
+
+    playerTurn() {
+        if (this.fighter1.life <= 0 || this.fighter2.life <= 0) return;
+
+        this.lastDefeated = null;
+
+        this.doAttack(this.fighter1, this.fighter2);
+
+        if (this.lastDefeated === 'monster') return;
+
+        if (this.fighter2.life > 0 && this.fighter1.life > 0) {
+            setTimeout(() => {
+                this.doAttack(this.fighter2, this.fighter1);
+            }, 600);
+        }
+    }
+
+    update() {
+        this.updateFighter(this.fighter1, this.fighter1El);
+        this.updateFighter(this.fighter2, this.fighter2El);
+    }
+
+    updateFighter(fighter, element) {
+        element.querySelector('.name').innerHTML =
+            `${fighter.name} - ${fighter.life.toFixed(1)} HP`;
+
+        let pct = (fighter.life / fighter.maxLife) * 100;
+        if (pct < 0) pct = 0;
+        element.querySelector('.bar').style.width = `${pct}%`;
+    }
+
+    doAttack(attacking, attacked) {
+        if (attacking.life <= 0 || attacked.life <= 0) return;
+
+        let attackFactor = Math.random() * 2;
+        let defenseFactor = Math.random() * 2;
+
+        let actualAttack = attacking.attack * attackFactor;
+        let actualDefense = attacked.defense * defenseFactor;
+
+        if (actualAttack > actualDefense) {
+            let damage = actualAttack - actualDefense;
+            attacked.life -= damage;
+            this.log.addMessage(`${attacking.name} causou ${damage.toFixed(1)} de dano em ${attacked.name}`);
+        } else {
+            this.log.addMessage(`${attacked.name} defendeu o ataque de ${attacking.name}!`);
+        }
+
+        this.update();
+
+        if (attacked.life <= 0) {
+            if (attacked === this.fighter2) {
+                this.lastDefeated = 'monster';
+                this.log.addMessage(`${attacked.name} foi derrotado! Um novo monstro apareceu!`);
+
+                this.fighter1.life = this.fighter1.maxLife;
+                this.log.addMessage(`O jogador recuperou toda a vida!`);
+
+                this.spawnNewMonster();
+            } else {
+                this.lastDefeated = 'player';
+                this.log.addMessage(`${attacked.name} foi derrotado! Fim de jogo.`);
+            }
+        }
+    }
+
+    spawnNewMonster() {
+        this.fighter2 = Math.random() > 0.5 ? new LittleMonster() : new BigMonster();
+        this.update();
+    }
+}
+
+class Log {
+    constructor(listEl) {
+        this.listEl = listEl;
+        this.messages = [];
+        this.maxMessages = 5;
+    }
+
+    addMessage(msg) {
+        this.messages.push(msg);
+
+        if (this.messages.length > this.maxMessages) {
+            this.messages.shift();
+        }
+
+        this.render();
+    }
+
+    render() {
+        this.listEl.innerHTML = '';
+        for (let msg of this.messages) {
+            const li = document.createElement('li');
+            li.innerText = msg;
+            this.listEl.appendChild(li);
+        }
+    }
+}
 
 const charEl = document.querySelector('#char');
 const monsterEl = document.querySelector('#monster');
-const newMonsterBtn = document.querySelector('#newMonster');
-const startButton = document.querySelector('#startBattle');
+const log = new Log(document.querySelector('#log'));
+const startButton = document.querySelector('#startButton');
+const characterButtons = document.querySelectorAll('.char-option');
 
-const emojiMap = {
-    'Merlin': '🧙',
-    'Little Monster': '🐀',
-    'Big Monster': '🐲',
-    'Skeleton': '💀',
-    'Orc': '👹',
-    'Slime': '🟢',
-    'Dragon': '🐉'
-};
+let selectedClass = null;
+let player;
+let monster;
+let stage;
 
-function refreshUI(){
-    const f1Avatar = charEl.querySelector('.avatar');
-    const f2Avatar = monsterEl.querySelector('.avatar');
-    f1Avatar.textContent = emojiMap[stage.fighter1.name] || '🧑';
-    f2Avatar.textContent = emojiMap[stage.fighter2.name] || '👾';
-    monsterEl.classList.add('spawn-fade');
-    setTimeout(()=> monsterEl.classList.remove('spawn-fade'), 500);
-}
-
-let killCount = 0;
-const killCountEl = document.querySelector('#killCount');
-function incrementKillCount(){
-    killCount++;
-    if(killCountEl) killCountEl.textContent = String(killCount);
-}
-
-const rewardPanel = document.querySelector('#rewardPanel');
-const rewardButtons = rewardPanel ? rewardPanel.querySelectorAll('[data-reward]') : null;
-
-function pauseAutoAttack(){
-    if(autoIntervalChar){ clearInterval(autoIntervalChar); autoIntervalChar = null; }
-    if(autoIntervalMonster){ clearInterval(autoIntervalMonster); autoIntervalMonster = null; }
-}
-
-function resumeAutoAttack(){
-    if(!autoIntervalChar){
-        autoIntervalChar = setInterval(()=>{
-            if(stage.fighter1.life > 0 && stage.fighter2.life > 0){
-                charEl.querySelector('.attackButton').click();
-            }
-        }, 900);
-    }
-    if(!autoIntervalMonster){
-        autoIntervalMonster = setInterval(()=>{
-            if(stage.fighter2.life > 0 && stage.fighter1.life > 0){
-                monsterEl.querySelector('.attackButton').click();
-            }
-        }, 1100);
-    }
-}
-
-function applyReward(type, amount){
-    const hero = stage.fighter1;
-    if(!hero) return;
-    amount = Number(amount) || 0;
-    if(type === 'attack'){
-        hero.attack += amount;
-        log.addMessage(`Ataque aumentado em +${amount}! (Agora ${hero.attack})`);
-    } else if(type === 'life'){
-        hero.maxLife += amount;
-        hero.life += amount;
-        log.addMessage(`Vida aumentada em +${amount}! (Agora ${hero.life.toFixed(1)}/${hero.maxLife})`);
-    } else if(type === 'defense'){
-        hero.defense += amount;
-        log.addMessage(`Defesa aumentada em +${amount}! (Agora ${hero.defense})`);
-    }
-    stage.update();
-    refreshUI();
-}
-
-function showRewardPanel(killedName){
-    return new Promise((resolve)=>{
-        if(!rewardPanel || !rewardButtons){ resolve(); return; }
-        pauseAutoAttack();
-        rewardPanel.classList.remove('hidden');
-        function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-        rewardButtons.forEach(b => {
-            const type = b.getAttribute('data-reward');
-            let amt = 0;
-            if(type === 'attack') amt = rand(1,5);
-            else if(type === 'life') amt = rand(10,40);
-            else if(type === 'defense') amt = rand(1,3);
-            b.setAttribute('data-amount', String(amt));
-            if(type === 'attack') b.textContent = `+${amt} Ataque`;
-            else if(type === 'life') b.textContent = `+${amt} Vida`;
-            else if(type === 'defense') b.textContent = `+${amt} Defesa`;
-        });
-        function onChoose(e){
-            const btn = e.currentTarget;
-            const type = btn.getAttribute('data-reward');
-            const amount = btn.getAttribute('data-amount') || btn.dataset.amount || 0;
-            applyReward(type, amount);
-            rewardButtons.forEach(b => b.removeEventListener('click', onChoose));
-            rewardPanel.classList.add('hidden');
-            resumeAutoAttack();
-            resolve();
-        }
-        rewardButtons.forEach(b => b.addEventListener('click', onChoose));
+characterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        characterButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedClass = btn.getAttribute('data-class');
+        log.addMessage(`Você escolheu: ${btn.innerText.trim()}`);
     });
-}
-
-function playHitAnimation(targetEl){
-    targetEl.classList.add('hit');
-    setTimeout(()=> targetEl.classList.remove('hit'), 300);
-}
-
-function showDamagePop(attackedObj, damage){
-    const targetEl = (stage.fighter2 === attackedObj) ? monsterEl : charEl;
-    const avatar = targetEl.querySelector('.avatar');
-    const rect = avatar.getBoundingClientRect();
-    const pop = document.createElement('div');
-    pop.className = 'damage-pop';
-    pop.textContent = `-${Number(damage).toFixed(0)}`;
-    document.body.appendChild(pop);
-    pop.style.left = `${rect.left + rect.width/2 - 12}px`;
-    pop.style.top = `${rect.top - 8}px`;
-    setTimeout(()=>{ pop.remove(); }, 950);
-}
-
-charEl.querySelector('.attackButton').addEventListener('click', ()=>{
-    playHitAnimation(monsterEl);
-    setTimeout(()=> { stage.update(); refreshUI(); }, 300);
 });
 
-monsterEl.querySelector('.attackButton').addEventListener('click', ()=>{
-    playHitAnimation(charEl);
-    setTimeout(()=> { stage.update(); refreshUI(); }, 300);
+startButton.addEventListener('click', () => {
+    if (!selectedClass) {
+        log.addMessage('Escolha um personagem antes de iniciar a luta!');
+        return;
+    }
+
+    if (selectedClass === 'knight') player = new Knight('Cavaleiro');
+    else if (selectedClass === 'sorcerer') player = new Sorcerer('Mago');
+    else if (selectedClass === 'archer') player = new Archer('Arqueiro');
+    else player = new Knight('Cavaleiro');
+
+    monster = Math.random() > 0.5 ? new LittleMonster() : new BigMonster();
+
+    log.messages = [];
+    log.render();
+
+    log.addMessage(`A luta começou! ${player.name} vs ${monster.name}`);
+
+    stage = new Stage(player, monster, charEl, monsterEl, log);
+    stage.start();
 });
-
-newMonsterBtn.addEventListener('click', ()=>{
-    const nm = createMonster();
-    stage.fighter2 = nm;
-    log.addMessage(`${nm.name} apareceu (forçado)!`);
-    stage.update();
-    refreshUI();
-});
-
-let autoIntervalChar = null;
-let autoIntervalMonster = null;
-
-if(startButton){
-    charEl.querySelector('.attackButton').disabled = true;
-    monsterEl.querySelector('.attackButton').disabled = true;
-    startButton.addEventListener('click', ()=>{
-        stage.start();
-        charEl.querySelector('.attackButton').disabled = false;
-        monsterEl.querySelector('.attackButton').disabled = false;
-        resumeAutoAttack();
-        log.addMessage('Batalha iniciada! Ataque automático ativado.');
-        startButton.disabled = true;
-    });
-}
-
-stage.update();
-refreshUI();
-
