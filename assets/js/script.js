@@ -54,12 +54,18 @@ class Stage {
         let actualAttack = attacking.attack * attackFactor;
         let actualDefense = attacked.defense * defenseFactor;
 
+        let attackerColor = attacking === this.fighter1 ? "green" : "red";
+
         if (actualAttack > actualDefense) {
             let damage = actualAttack - actualDefense;
             attacked.life -= damage;
-            this.log.addMessage(`${attacking.name} causou ${damage.toFixed(1)} de dano em ${attacked.name}`);
+            this.log.addMessage(
+                `<span style="color:${attackerColor}">${attacking.name}</span> causou ${damage.toFixed(1)} de dano em ${attacked.name}`
+            );
         } else {
-            this.log.addMessage(`${attacked.name} defendeu o ataque de ${attacking.name}!`);
+            this.log.addMessage(
+                `${attacked.name} defendeu o ataque de <span style="color:${attackerColor}">${attacking.name}</span>`
+            );
         }
 
         this.update();
@@ -68,10 +74,8 @@ class Stage {
             if (attacked === this.fighter2) {
                 this.lastDefeated = 'monster';
                 this.log.addMessage(`${attacked.name} foi derrotado! Um novo monstro apareceu!`);
-
                 this.fighter1.life = this.fighter1.maxLife;
                 this.log.addMessage(`O jogador recuperou toda a vida!`);
-
                 this.spawnNewMonster();
             } else {
                 this.lastDefeated = 'player';
@@ -107,7 +111,7 @@ class Log {
         this.listEl.innerHTML = '';
         for (let msg of this.messages) {
             const li = document.createElement('li');
-            li.innerText = msg;
+            li.innerHTML = msg;
             this.listEl.appendChild(li);
         }
     }
