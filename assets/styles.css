@@ -1,0 +1,72 @@
+.app-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 24px;
+    background: linear-gradient(90deg,#0f172a 0%, #0b1220 100%);
+    color: #fff;
+}
+
+.app-header h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing:1px;
+}
+
+.controls{display:flex;gap:12px;align-items:center}
+
+.kill-counter{ color:#cbd5e1; background: rgba(255,255,255,0.04); padding:6px 10px; border-radius:8px; font-weight:700 }
+.spawn-mode select{ margin-left:8px; padding:6px 8px; border-radius:8px; border:none; background: rgba(255,255,255,0.06); color:#fff }
+
+.btn{
+    background: #e6e6e6;
+    border: none;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    transition: all .18s ease;
+    box-shadow: 0 2px 6px rgba(2,6,23,0.12);
+}
+.btn:hover{ transform: translateY(-2px); }
+.btn.primary{ background: linear-gradient(90deg,#7c3aed,#06b6d4); color:#fff }
+
+main{ padding:24px; max-width:1000px; margin:18px auto }
+
+.fightarea{ display:flex; gap:20px; align-items:flex-start }
+.card{ flex:1; background: linear-gradient(180deg,#0b1220 0%, #071025 100%); color:#fff; padding:18px; border-radius:12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); position:relative; overflow:hidden }
+
+.avatar{ font-size:48px; width:72px; height:72px; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg,#0ea5e9,#7c3aed); margin-bottom:12px }
+.card .name{ display:block; font-weight:700; margin-bottom:8px }
+
+.lifebar{ height:14px; background: rgba(255,255,255,0.06); border-radius:10px; overflow:hidden; border: 1px solid rgba(255,255,255,0.06); margin-bottom:14px }
+.lifebar .bar{ height:100%; width:100%; transition:width .4s ease; background: linear-gradient(90deg,#ef4444,#f97316) }
+
+.lifebar .bar.high{ background: linear-gradient(90deg,#10b981,#06b6d4) }
+.lifebar .bar.medium{ background: linear-gradient(90deg,#f59e0b,#f97316) }
+.lifebar .bar.low{ background: linear-gradient(90deg,#ef4444,#dc2626) }
+
+.damage-pop{ position:absolute; pointer-events:none; color:#fffb; font-weight:800; text-shadow:0 2px 6px rgba(0,0,0,0.6); transform: translateY(0); animation: popUp 900ms ease forwards }
+@keyframes popUp{ 0%{ opacity:1; transform: translateY(0) scale(1) } 60%{ opacity:1; transform: translateY(-28px) scale(1.05) } 100%{ opacity:0; transform: translateY(-48px) scale(1) } }
+
+.spawn-fade{ animation: spawnFade .5s ease }
+@keyframes spawnFade{ from{ opacity:0; transform: scale(.95) } to{ opacity:1; transform: scale(1) } }
+
+.reward-box{ transform: translateY(6px); transition: transform .18s ease, opacity .18s ease }
+.reward-panel .reward-box{ transform: translateY(0) }
+
+.actions{ display:flex; gap:8px }
+
+.log{ margin:20px auto; max-width:1000px; background:#fff; color:#111; border-radius:10px; padding:12px; height:180px; overflow-y:auto; box-shadow:0 6px 20px rgba(2,6,23,0.12) }
+.log li{ padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.04) }
+
+.hit{ animation: hitAnim .25s ease; }
+@keyframes hitAnim{ 0%{ transform: translateX(0) scale(1) } 50%{ transform: translateX(-8px) scale(.98) } 100%{ transform: translateX(0) scale(1) } }
+
+@media(max-width:720px){ .fightarea{ flex-direction:column } .avatar{ width:56px;height:56px;font-size:40px } }
+
+.reward-panel.hidden{ display:none }
+.reward-panel{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(2,6,23,0.6); z-index:1000 }
+.reward-box{ background: linear-gradient(180deg,#071025,#0b1220); color:#fff; padding:20px; border-radius:12px; width:320px; text-align:center; box-shadow:0 12px 40px rgba(2,6,23,0.7) }
+.reward-box h3{ margin:0 0 8px }
+.reward-actions{ display:flex; gap:8px; justify-content:center; margin-top:12px }
+.reward-actions .btn{ flex:1 }
