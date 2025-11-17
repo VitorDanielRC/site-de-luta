@@ -16,7 +16,6 @@ h1 {
     margin-top: 0;
 }
 
-
 #characterSelect {
     margin-top: 10px;
 }
@@ -80,7 +79,14 @@ h1 {
     background: #0090c4;
 }
 
-
+#playerName {
+    padding: 8px;
+    width: 200px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+}
 
 main {
     display: flex;
@@ -128,8 +134,6 @@ main {
 .attackButton:hover {
     background: #003db8;
 }
-
-
 
 #logSection {
     margin: 0 20px 30px;
