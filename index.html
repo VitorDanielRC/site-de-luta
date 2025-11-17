@@ -1,66 +1,56 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="assets/styles.css" />
-
-    <title>Projeto Luta</title>
+    <title>Jogo de Luta</title>
+    <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-    <header class="app-header">
-        <h1>Projeto Luta</h1>
-        <div class="controls">
-            <button id="startBattle" class="btn primary">Iniciar Luta</button>
-            <button id="newMonster" class="btn">Novo inimigo</button>
-            <div class="spawn-mode">Modo: Progressivo (fraco → forte)</div>
-            <div class="kill-counter">Kills: <span id="killCount">0</span></div>
-        </div>
+    <header>
+        <h1>Jogo de Luta</h1>
+
+    
+        <section id="characterSelect">
+            <h2>Escolha seu personagem</h2>
+            <div class="character-grid">
+                <button class="char-option" data-class="knight">
+                    <img src="assets/img/knight.gif" alt="Cavaleiro">
+                    <span>Cavaleiro</span>
+                </button>
+
+                <button class="char-option" data-class="sorcerer">
+                    <img src="assets/img/sorcerer.gif" alt="Mago">
+                    <span>Mago</span>
+                </button>
+
+                <button class="char-option" data-class="archer">
+                    <img src="assets/img/archer.gif" alt="Arqueiro">
+                    <span>Arqueiro</span>
+                </button>
+            </div>
+
+            <button id="startButton">Iniciar Luta</button>
+        </section>
     </header>
 
     <main>
-        <div class="fightarea">
+        <div id="char" class="fighter">
+            <h2 class="name">Jogador</h2>
+            <div class="lifeBar"><div class="bar"></div></div>
+            <button class="attackButton">Atacar</button>
+        </div>
 
-            <div id="char" class="card"> 
-                <div class="avatar">🧙</div>
-                <strong class="name"> -- </strong>
-                <div class="lifebar">
-                    <div class="bar" style="width: 10%;"> </div>
-                </div>
-                <div class="actions">
-                    <button class="attackButton btn primary"> Atacar </button>
-                </div>
-            </div>
-
-            <div id="monster" class="card"> 
-                <div class="avatar">👾</div>
-                <strong class="name"> -- </strong>
-                <div class="lifebar">
-                    <div class="bar" style="width: 10%;"> </div>
-                </div>
-                <div class="actions">
-                    <button class="attackButton btn"> Atacar </button>
-                </div>
-            </div>
+        <div id="monster" class="fighter">
+            <h2 class="name">Monstro</h2>
+            <div class="lifeBar"><div class="bar"></div></div>
         </div>
     </main>
 
-
-    <ul class="log"> </ul>
-
-    <div id="rewardPanel" class="reward-panel hidden">
-        <div class="reward-box">
-            <h3>Escolha sua recompensa</h3>
-            <p>Você pode aumentar uma das suas habilidades:</p>
-            <div class="reward-actions">
-                <button data-reward="attack" class="btn primary">+2 Ataque</button>
-                <button data-reward="life" class="btn">+20 Vida</button>
-                <button data-reward="defense" class="btn">+1 Defesa</button>
-            </div>
-        </div>
-    </div>
+    <section id="logSection">
+        <h2>Log da Batalha</h2>
+        <ul id="log"></ul>
+    </section>
 
     <script src="assets/js/classes.js"></script>
     <script src="assets/js/script.js"></script>
