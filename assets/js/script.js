@@ -17,13 +17,9 @@ class Stage {
 
     playerTurn() {
         if (this.fighter1.life <= 0 || this.fighter2.life <= 0) return;
-
         this.lastDefeated = null;
-
         this.doAttack(this.fighter1, this.fighter2);
-
         if (this.lastDefeated === 'monster') return;
-
         if (this.fighter2.life > 0 && this.fighter1.life > 0) {
             setTimeout(() => {
                 this.doAttack(this.fighter2, this.fighter1);
@@ -39,7 +35,6 @@ class Stage {
     updateFighter(fighter, element) {
         element.querySelector('.name').innerHTML =
             `${fighter.name} - ${fighter.life.toFixed(1)} HP`;
-
         let pct = (fighter.life / fighter.maxLife) * 100;
         if (pct < 0) pct = 0;
         element.querySelector('.bar').style.width = `${pct}%`;
@@ -99,11 +94,7 @@ class Log {
 
     addMessage(msg) {
         this.messages.push(msg);
-
-        if (this.messages.length > this.maxMessages) {
-            this.messages.shift();
-        }
-
+        if (this.messages.length > this.maxMessages) this.messages.shift();
         this.render();
     }
 
@@ -122,6 +113,7 @@ const monsterEl = document.querySelector('#monster');
 const log = new Log(document.querySelector('#log'));
 const startButton = document.querySelector('#startButton');
 const characterButtons = document.querySelectorAll('.char-option');
+const nameInput = document.querySelector('#playerName');
 
 let selectedClass = null;
 let player;
@@ -138,15 +130,18 @@ characterButtons.forEach(btn => {
 });
 
 startButton.addEventListener('click', () => {
+    let customName = nameInput.value.trim();
+    if (customName === "") customName = "Herói";
+
     if (!selectedClass) {
         log.addMessage('Escolha um personagem antes de iniciar a luta!');
         return;
     }
 
-    if (selectedClass === 'knight') player = new Knight('Cavaleiro');
-    else if (selectedClass === 'sorcerer') player = new Sorcerer('Mago');
-    else if (selectedClass === 'archer') player = new Archer('Arqueiro');
-    else player = new Knight('Cavaleiro');
+    if (selectedClass === 'knight') player = new Knight(customName);
+    else if (selectedClass === 'sorcerer') player = new Sorcerer(customName);
+    else if (selectedClass === 'archer') player = new Archer(customName);
+    else player = new Knight(customName);
 
     monster = Math.random() > 0.5 ? new LittleMonster() : new BigMonster();
 
